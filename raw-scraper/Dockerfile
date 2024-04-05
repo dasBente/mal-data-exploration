@@ -7,4 +7,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY scraper.py .
 
+RUN export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 CMD ["python", "scraper.py"]
