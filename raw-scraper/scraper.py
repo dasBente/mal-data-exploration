@@ -16,9 +16,11 @@ db = MongoClient(MONGODB_URL)[MONGODB_NAME]
 id = 1
 success = True
 
-while True:
+limit = int(os.environ.get("ID_LIMIT", 1))
+
+while id < limit:
     res = requests.get(f"http://api.jikan.moe/v4/anime/{id}/full")
-    if res.status_code != 200: break
+    if res.status_code != 200: continue
     
     anime_data = res.json()["data"]
     print(f"Downloading {anime_data['title']} with ID {id}")
