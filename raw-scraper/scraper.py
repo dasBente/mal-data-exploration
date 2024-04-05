@@ -20,10 +20,13 @@ limit = int(os.environ.get("ID_LIMIT", 1))
 
 while id < limit:
     res = requests.get(f"http://api.jikan.moe/v4/anime/{id}/full")
-    if res.status_code != 200: continue
+    if res.status_code != 200: 
+        print(f"Skipping {id}, unknown.")
+        id += 1
+        continue
     
     anime_data = res.json()["data"]
-    print(f"Downloading {anime_data['title']} with ID {id}")
+    print(f"\nDownloading {anime_data['title']} with ID {id}/{limit}")
     sleep(1)
     
     for tag in ["characters", "staff", "statistics", "moreinfo", "recommendations"]:
@@ -38,7 +41,7 @@ while id < limit:
         items = []
         
         while True:
-            print(f"Downloading {tag}, page {i}")
+            print(f"Downloading {tag}, page {i}", end="\r")
             
             res = requests.get(f"http://api.jikan.moe/v4/anime/{id}/{tag}?page={i}")
             tag_data = res.json()            
@@ -46,12 +49,14 @@ while id < limit:
             
             if res.status_code != 200 or not "data" in tag_data or len(tag_data["data"]) == 0:
                 anime_data[tag] = items
-                print(f"[{tag}] Stopped with {res.status_code} for {str(tag_data)} on page {i}")
+                print(f"\n[{tag}] Stopped with {res.status_code} for {str(tag_data)} on page {i}")
                 break
             
             items += tag_data["data"]
             i += 1
+        print("")
     
     db["anime_raw"].update_one({"mal_id": id}, {"$set": anime_data}, True)
     id += 1
+    print(id)
     
